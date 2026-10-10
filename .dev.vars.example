@@ -1,0 +1,12 @@
+# Copy to .dev.vars for `wrangler dev` and `npm run register-commands`.
+# .dev.vars is gitignored. Never commit real tokens, keys, or IDs.
+
+DISCORD_BOT_TOKEN=replace-with-bot-token
+DISCORD_PUBLIC_KEY=replace-with-application-public-key
+DISCORD_APPLICATION_ID=replace-with-application-id
+DISCORD_GUILD_ID=replace-with-test-guild-id
+RECOVERIES_CHANNEL_ID=replace-with-recoveries-channel-id
+COORDINATOR_ROLE_ID=replace-with-coordinator-role-id
+RANGER_SHARED_SECRET=replace-with-long-random-secret
+SHEET_ID=replace-with-sheet-id
+GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account","client_email":"replace@example.iam.gserviceaccount.com","private_key":"-----BEGIN PRIVATE KEY-----\\nREPLACE\\n-----END PRIVATE KEY-----\\n"}

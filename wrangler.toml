@@ -1,0 +1,46 @@
+# Placeholder configuration for the standalone UORRT dispatch Worker.
+# Do not commit real server IDs, form IDs, tokens, or keys.
+# This file has no routes on purpose. Deploy only to a test Worker.
+
+name = "uorrt-dispatch"
+main = "src/index.ts"
+compatibility_date = "2026-10-10"
+
+# Non-secret defaults. Override real identifiers with `wrangler secret put`
+# (same names) so they are not committed while this repo is public.
+[vars]
+DISCORD_PUBLIC_KEY = "REPLACE_WITH_DISCORD_APPLICATION_PUBLIC_KEY"
+DISCORD_APPLICATION_ID = "REPLACE_WITH_DISCORD_APPLICATION_ID"
+RECOVERIES_CHANNEL_ID = "REPLACE_WITH_RECOVERIES_CHANNEL_ID"
+COORDINATOR_ROLE_ID = "REPLACE_WITH_COORDINATOR_ROLE_ID"
+REPLAY_WINDOW_SECONDS = "300"
+MAX_PHOTOS = "10"
+MAX_PHOTO_BYTES = "10485760"
+MAX_TOTAL_PHOTO_BYTES = "26214400"
+SHEET_ID = "REPLACE_WITH_GOOGLE_SHEET_ID"
+SHEET_CLAIMS_TAB = "Claims"
+SHEET_OUTCOMES_TAB = "Outcomes"
+AAR_FORM_ID = "REPLACE_WITH_AAR_FORM_ID"
+AAR_ENTRY_RECOVERY_ID = "REPLACE_WITH_AAR_ENTRY_RECOVERY_ID"
+AAR_ENTRY_DATE = "REPLACE_WITH_AAR_ENTRY_DATE"
+AAR_ENTRY_RESPONDERS = "REPLACE_WITH_AAR_ENTRY_RESPONDERS"
+MILEAGE_FORM_ID = "REPLACE_WITH_MILEAGE_FORM_ID"
+MILEAGE_ENTRY_RECOVERY_ID = "REPLACE_WITH_MILEAGE_ENTRY_RECOVERY_ID"
+MILEAGE_ENTRY_DATE = "REPLACE_WITH_MILEAGE_ENTRY_DATE"
+MILEAGE_ENTRY_VOLUNTEER = "REPLACE_WITH_MILEAGE_ENTRY_VOLUNTEER"
+
+# Secrets, set with `wrangler secret put` and never committed:
+# DISCORD_BOT_TOKEN
+# RANGER_SHARED_SECRET
+# GOOGLE_SERVICE_ACCOUNT_JSON
+
+[[d1_databases]]
+binding = "DB"
+database_name = "uorrt-dispatch"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Sheet-outbox retry, and the place a future escalation check would run.
+# v1 does not escalate.
+[triggers]
+crons = ["*/10 * * * *"]

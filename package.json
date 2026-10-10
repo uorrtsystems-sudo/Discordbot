@@ -1,0 +1,29 @@
+{
+  "name": "uorrt-dispatch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Discord dispatch bot for Utah Off Road Recovery Team volunteers.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-sqlite --disable-warning=ExperimentalWarning' vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "register-commands": "tsx scripts/register-commands.ts",
+    "dev": "wrangler dev",
+    "db:migrate:local": "wrangler d1 migrations apply uorrt-dispatch --local"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.12.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.149.0"
+  }
+}
