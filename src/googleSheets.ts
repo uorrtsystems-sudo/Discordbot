@@ -1,5 +1,6 @@
 import { isPlaceholder, readConfig } from "./config.js";
 import type { Env } from "./env.js";
+import { bindFetch } from "./fetchBind.js";
 import { createGoogleJwt, parseServiceAccount } from "./googleJwt.js";
 import type { SheetLogger } from "./sheetLog.js";
 import type { SheetKind } from "./types.js";
@@ -21,12 +22,15 @@ async function requestOnce(fetchImpl: typeof fetch, url: string, init: RequestIn
 
 export class GoogleSheetLogger implements SheetLogger {
   private token: { value: string; exp: number } | null = null;
+  private readonly fetchImpl: typeof fetch;
 
   constructor(
     private readonly env: Env,
-    private readonly fetchImpl: typeof fetch,
+    fetchImpl: typeof fetch,
     private readonly now: () => Date = () => new Date(),
-  ) {}
+  ) {
+    this.fetchImpl = bindFetch(fetchImpl);
+  }
 
   async append(kind: SheetKind, values: string[]): Promise<void> {
     const config = readConfig(this.env);

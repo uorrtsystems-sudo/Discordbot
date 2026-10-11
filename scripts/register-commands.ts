@@ -1,5 +1,6 @@
 import { pathToFileURL } from "node:url";
 import { commandRegistrationUrl, slashCommands } from "../src/commands.js";
+import { bindFetch } from "../src/fetchBind.js";
 import { loadDevVars } from "./load-dev-vars.js";
 
 function redact(text: string, secrets: string[]): string {
@@ -17,7 +18,7 @@ export async function registerCommands(env: NodeJS.ProcessEnv, fetchImpl: typeof
   if (!token || !applicationId) {
     throw new Error("Missing DISCORD_BOT_TOKEN or DISCORD_APPLICATION_ID");
   }
-  const response = await fetchImpl(commandRegistrationUrl(applicationId, guildId), {
+  const response = await bindFetch(fetchImpl)(commandRegistrationUrl(applicationId, guildId), {
     method: "PUT",
     headers: {
       authorization: `Bot ${token}`,

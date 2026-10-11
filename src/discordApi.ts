@@ -1,5 +1,6 @@
 import { toArrayBuffer } from "./bytes.js";
 import { DISCORD_TIMEOUT_MS, isPlaceholder } from "./config.js";
+import { bindFetch } from "./fetchBind.js";
 import type { OutgoingMessage } from "./types.js";
 
 const DISCORD_API = "https://discord.com/api/v10";
@@ -20,7 +21,7 @@ export interface DiscordApi {
     messageId: string,
     message: Pick<OutgoingMessage, "content" | "components">,
   ): Promise<void>;
-  createPrivateThread(channelId: string, messageId: string, name: string): Promise<{ id: string }>;
+  createPrivateThread(channelId: string, name: string): Promise<{ id: string }>;
   addThreadMember(threadId: string, userId: string): Promise<void>;
   removeThreadMember(threadId: string, userId: string): Promise<void>;
 }
@@ -28,11 +29,15 @@ export interface DiscordApi {
 type Json = Record<string, unknown>;
 
 export class DiscordRest implements DiscordApi {
+  private readonly fetchImpl: typeof fetch;
+
   constructor(
     private readonly token: string,
-    private readonly fetchImpl: typeof fetch,
+    fetchImpl: typeof fetch,
     private readonly baseUrl = DISCORD_API,
-  ) {}
+  ) {
+    this.fetchImpl = bindFetch(fetchImpl);
+  }
 
   async createMessage(channelId: string, message: OutgoingMessage): Promise<{ id: string }> {
     const payload = this.payload(message);
@@ -63,8 +68,14 @@ export class DiscordRest implements DiscordApi {
     await this.expectOk(response);
   }
 
-  async createPrivateThread(channelId: string, messageId: string, name: string): Promise<{ id: string }> {
-    const path = `/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}/threads`;
+  /**
+   * Start the thread on the channel, not on the public message.
+   * POST /channels/{channel}/messages/{message}/threads always creates a public
+   * thread (type 11) and ignores type 12. A public thread would show phone,
+   * injuries, and vehicle details to everyone in #recoveries.
+   */
+  async createPrivateThread(channelId: string, name: string): Promise<{ id: string }> {
+    const path = `/channels/${encodeURIComponent(channelId)}/threads`;
     const response = await this.raw("POST", path, {
       name,
       type: 12,

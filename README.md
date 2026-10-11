@@ -57,7 +57,7 @@ The public message in `#recoveries` contains only:
 - who is going
 - **I'm responding** and **Can't make it**
 
-Phone, injuries, vehicle, situation, and county are posted only in a private thread on that message. **I'm responding** adds that volunteer to the thread, including someone who responds later, and refreshes the list. Clicking it again does not add them twice. **Can't make it** records the volunteer and removes them from the thread if they had joined.
+Phone, injuries, vehicle, situation, and county are posted only in a private thread on that channel. The thread is not started from the public message, because Discord would make that thread public. **I'm responding** adds that volunteer to the thread, including someone who responds later, and refreshes the list. Clicking it again does not add them twice. **Can't make it** records the volunteer and removes them from the thread if they had joined.
 
 **Close out** is on the thread message. A volunteer who is marked as responding can use it, and so can anyone with the configured coordinator role. The outcome is one of: recovered, cancelled, declined, or referred to tow. The thread then gets:
 

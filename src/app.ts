@@ -8,7 +8,8 @@ import { json } from "./http.js";
 export type { Env };
 
 export function createDeps(env: Env): Deps {
-  return buildDeps(env, globalThis.fetch);
+  // Workers fetch throws Illegal invocation unless it is called with the global this.
+  return buildDeps(env, globalThis.fetch.bind(globalThis));
 }
 
 export async function route(request: Request, env: Env, deps: Deps = createDeps(env)): Promise<Response> {

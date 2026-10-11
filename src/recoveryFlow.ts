@@ -24,6 +24,7 @@ import {
 } from "./db.js";
 import type { Env } from "./env.js";
 import { isRecoveryId, newRecoveryId } from "./ids.js";
+import { safeErrorMessage } from "./log.js";
 import { isOutcome, OUTCOMES } from "./outcomes.js";
 import {
   formatCloseoutMessage,
@@ -174,8 +175,8 @@ export async function openRecovery(env: Env, deps: Deps, input: IntakeInput): Pr
           files: plan.attached,
         });
         await savePublicMessage(deps.db, recoveryId, config.recoveriesChannelId, posted.id);
-      } catch {
-        console.error("public post failed");
+      } catch (error) {
+        console.error("public post failed", safeErrorMessage(error));
         await rollbackUnpublished(deps, input.idempotencyKey, recoveryId);
         return json(
           { error: "Could not post the recovery to Discord. Retry with the same idempotency key." },
@@ -191,7 +192,6 @@ export async function openRecovery(env: Env, deps: Deps, input: IntakeInput): Pr
       try {
         const thread = await deps.discord.createPrivateThread(
           recovery.publicChannelId ?? config.recoveriesChannelId,
-          recovery.publicMessageId,
           threadTitle(recovery.id, recovery.requesterName),
         );
         await saveThreadId(deps.db, recoveryId, thread.id);

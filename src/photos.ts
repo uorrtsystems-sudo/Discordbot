@@ -1,4 +1,12 @@
+import { bindFetch } from "./fetchBind.js";
 import type { PhotoNote, Upload } from "./types.js";
+
+/**
+ * upload.wikimedia.org returns 403 "Please set a user-agent" when this header
+ * is missing. That response is not an image, so the download is reported as
+ * "could not download".
+ */
+export const PHOTO_USER_AGENT = "UORRT-Dispatch/1.0 (volunteer recovery bot)";
 
 export type AttachedPhoto = {
   filename: string;
@@ -153,11 +161,14 @@ export async function fetchPhoto(
   const blocked = photoUrlBlockReason(url);
   if (blocked) return { ok: false, reason: blocked };
   try {
-    const response = await options.fetchImpl(url, {
+    const response = await bindFetch(options.fetchImpl)(url, {
       method: "GET",
       redirect: "manual",
       signal: AbortSignal.timeout(options.timeoutMs),
-      headers: { accept: "image/jpeg,image/png,image/gif,image/webp" },
+      headers: {
+        accept: "image/jpeg,image/png,image/gif,image/webp",
+        "user-agent": PHOTO_USER_AGENT,
+      },
     });
     if (response.status >= 300 && response.status < 400) {
       return { ok: false, reason: "redirects are not followed" };

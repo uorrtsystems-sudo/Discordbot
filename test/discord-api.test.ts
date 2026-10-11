@@ -33,18 +33,25 @@ describe("Discord REST client", () => {
     expect(created.id).toBe("msg-2");
   });
 
-  it("retries private thread creation with a shorter archive window", async () => {
-    const bodies: string[] = [];
-    const client = new DiscordRest("test-discord-bot-token", async (_input, init) => {
-      bodies.push(String(init?.body));
-      if (bodies.length === 1) return new Response("no", { status: 400 });
+  it("creates a private thread on the channel and retries a shorter archive window", async () => {
+    const calls: { url: string; body: string }[] = [];
+    const client = new DiscordRest("test-discord-bot-token", async (input, init) => {
+      calls.push({ url: String(input), body: String(init?.body) });
+      if (calls.length === 1) return new Response("no", { status: 400 });
       return new Response(JSON.stringify({ id: "thread-1" }), { status: 200 });
     });
-    const thread = await client.createPrivateThread("channel-recoveries", "msg-1", "Recovery r_0123abcd4567ef89");
+    const thread = await client.createPrivateThread("channel-recoveries", "Recovery r_0123abcd4567ef89");
     expect(thread.id).toBe("thread-1");
-    expect(bodies[0]).toContain("10080");
-    expect(bodies[1]).toContain("1440");
-    expect(bodies[1]).toContain("\"invitable\":false");
+    expect(calls).toHaveLength(2);
+    for (const call of calls) {
+      expect(call.url).toBe("https://discord.com/api/v10/channels/channel-recoveries/threads");
+      expect(call.url).not.toContain("/messages/");
+      const parsed = JSON.parse(call.body) as { type: number; invitable: boolean };
+      expect(parsed.type).toBe(12);
+      expect(parsed.invitable).toBe(false);
+    }
+    expect(calls[0]?.body).toContain("10080");
+    expect(calls[1]?.body).toContain("1440");
   });
 
   it("treats a missing thread participant as already removed", async () => {

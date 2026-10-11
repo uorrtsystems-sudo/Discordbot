@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fetchPhoto, photoUrlBlockReason, planPhotos } from "../src/photos.js";
+import { PHOTO_USER_AGENT, fetchPhoto, photoUrlBlockReason, planPhotos } from "../src/photos.js";
 import { TINY_PNG, baseIntake } from "./fixtures.js";
 import { createTestApp, postIntake, visibleMessage } from "./helpers.js";
 
@@ -15,6 +15,21 @@ describe("photos", () => {
     };
     const blocked = await fetchPhoto("https://169.254.169.254/a.png", { fetchImpl, maxBytes: 1000, timeoutMs: 1000 });
     expect(blocked.ok).toBe(false);
+  });
+
+  it("sends a descriptive user-agent so hosts such as Wikimedia accept the download", async () => {
+    let userAgent = "";
+    const result = await fetchPhoto("https://upload.wikimedia.org/wikipedia/commons/a.png", {
+      fetchImpl: async (_input, init) => {
+        userAgent = new Headers(init?.headers).get("user-agent") ?? "";
+        return new Response(TINY_PNG, { status: 200, headers: { "content-type": "image/png" } });
+      },
+      maxBytes: 1000,
+      timeoutMs: 1000,
+    });
+    expect(result.ok).toBe(true);
+    expect(userAgent).toBe(PHOTO_USER_AGENT);
+    expect(userAgent.toLowerCase()).toContain("uorrt-dispatch");
   });
 
   it("does not follow redirects and skips oversized downloads", async () => {

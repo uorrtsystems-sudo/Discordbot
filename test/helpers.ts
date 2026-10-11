@@ -65,11 +65,14 @@ export function createDiscordMock() {
   let n = 0;
   let threadFailures = 0;
   let messageFailures = 0;
+  let messageError: Error | null = null;
   const api: DiscordApi = {
     async createMessage(channelId, message) {
       if (messageFailures > 0) {
         messageFailures -= 1;
-        throw new Error("discord down");
+        const error = messageError ?? new Error("discord down");
+        messageError = null;
+        throw error;
       }
       const id = `msg-${++n}`;
       calls.push({ op: "createMessage", channelId, message, id });
@@ -78,13 +81,13 @@ export function createDiscordMock() {
     async editMessage(channelId, messageId, message) {
       calls.push({ op: "editMessage", channelId, messageId, message });
     },
-    async createPrivateThread(channelId, messageId, name) {
+    async createPrivateThread(channelId, name) {
       if (threadFailures > 0) {
         threadFailures -= 1;
         throw new Error("discord down");
       }
       const id = `thread-${++n}`;
-      calls.push({ op: "createPrivateThread", channelId, messageId, name, id });
+      calls.push({ op: "createPrivateThread", channelId, name, id });
       return { id };
     },
     async addThreadMember(threadId, userId) {
@@ -100,8 +103,9 @@ export function createDiscordMock() {
     failNextThread() {
       threadFailures += 1;
     },
-    failNextMessage() {
+    failNextMessage(message = "discord down") {
       messageFailures += 1;
+      messageError = new Error(message);
     },
   };
 }
